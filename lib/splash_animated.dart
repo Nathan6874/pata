@@ -14,7 +14,9 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   late Animation<double> _fadeLogo;
   late Animation<double> _scaleLogo;
   late Animation<double> _fadeText;
+  late Animation<double> _fadeTagline;
   late Animation<Offset> _slideLine;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
@@ -25,25 +27,38 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
       vsync: this,
     );
     
+    // Animation du logo
     _fadeLogo = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4, curve: Curves.easeOut)),
     );
     
-    _scaleLogo = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.6, curve: Curves.elasticOut)),
+    _scaleLogo = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5, curve: Curves.elasticOut)),
     );
     
+    // Animation du texte PATA
     _fadeText = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.5, 0.8, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _controller, curve: const Interval(0.4, 0.7, curve: Curves.easeOut)),
     );
     
+    // Animation du slogan
+    _fadeTagline = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 0.8, curve: Curves.easeOut)),
+    );
+    
+    // Animation de la ligne + flèche
     _slideLine = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.7, 1.0, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _controller, curve: const Interval(0.7, 0.95, curve: Curves.easeOut)),
+    );
+    
+    // Animation de pulsation pour les particules
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
     
     _controller.forward();
     
-    Future.delayed(const Duration(milliseconds: 2800), () {
+    Future.delayed(const Duration(milliseconds: 3200), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -66,56 +81,119 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF008080),
-            Color(0xFF002626),
+            Color(0xFF008080), // Teal élégant
+            Color(0xFF00A0A0), // Teal moyen
+            Color(0xFF002626), // Teal profond
           ],
+          stops: [0.0, 0.5, 1.0],
         ),
       ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FadeTransition(
-              opacity: _fadeLogo,
-              child: ScaleTransition(
-                scale: _scaleLogo,
-                child: const CustomPaint(
-                  size: Size(220, 220),
-                  painter: PataLogoPainter(),
+      child: Stack(
+        children: [
+          // Particules animées en arrière-plan
+          ...List.generate(12, (index) {
+            return Positioned(
+              left: (index * 75.0) % MediaQuery.of(context).size.width,
+              top: (index * 120.0) % MediaQuery.of(context).size.height,
+              child: AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Opacity(
+                    opacity: 0.1 + (_pulseAnimation.value * 0.05),
+                    child: Container(
+                      width: 2,
+                      height: 2,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          }),
+          
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo animé
+                FadeTransition(
+                  opacity: _fadeLogo,
+                  child: ScaleTransition(
+                    scale: _scaleLogo,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.3),
+                            blurRadius: 30,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: const CustomPaint(
+                        size: Size(180, 180),
+                        painter: PataLogoPainter(),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            FadeTransition(
-              opacity: _fadeText,
-              child: const Text(
-                'PATA',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 2,
+                
+                const SizedBox(height: 30),
+                
+                // Texte PATA stylisé (sans soulignement)
+                FadeTransition(
+                  opacity: _fadeText,
+                  child: ShaderMask(
+                    shaderCallback: (bounds) {
+                      return const LinearGradient(
+                        colors: [Colors.white, Colors.white70],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(bounds);
+                    },
+                    child: const Text(
+                      'PATA',
+                      style: TextStyle(
+                        fontSize: 42,
+                        fontWeight: FontWeight.w200,
+                        color: Colors.white,
+                        letterSpacing: 4,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 10,
+                            color: Colors.white24,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),               
+                const SizedBox(height: 50),
+                
+                // Ligne + flèche animée
+                SlideTransition(
+                  position: _slideLine,
+                  child: const CustomPaint(
+                    size: Size(140, 24),
+                    painter: ArrowLinePainter(),
+                  ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(height: 40),
-            SlideTransition(
-              position: _slideLine,
-              child: const CustomPaint(
-                size: Size(120, 20),
-                painter: ArrowLinePainter(),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
 // ============================================================
-// LOGO PATA : empreinte de patte + barres de graphique 
-// + symboles monétaires (FCFA, $, €)
+// LOGO PATA PREMIUM : empreinte + barres + symboles monétaires
 // ============================================================
 class PataLogoPainter extends CustomPainter {
   const PataLogoPainter();
@@ -126,6 +204,11 @@ class PataLogoPainter extends CustomPainter {
       ..color = Colors.white
       ..style = PaintingStyle.fill;
     
+    final glowPaint = Paint()
+      ..color = Colors.white.withOpacity(0.15)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    
     final textPaint = TextPainter(
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.center,
@@ -134,7 +217,20 @@ class PataLogoPainter extends CustomPainter {
     final centerX = size.width / 2;
     final centerY = size.height / 2;
     
-    // === COUSSINET PRINCIPAL (forme de patte arrondie) ===
+    // Glow derrière le coussinet
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset(centerX, centerY + 15),
+          width: size.width * 0.5,
+          height: size.height * 0.38,
+        ),
+        Radius.circular(size.width * 0.13),
+      ),
+      glowPaint,
+    );
+    
+    // === COUSSINET PRINCIPAL ===
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
@@ -147,46 +243,44 @@ class PataLogoPainter extends CustomPainter {
       whitePaint,
     );
     
-    // === DOIGTS = BARRES DE GRAPHIQUE AVEC SYMBOLES ===
-    // Doigt 1 (haut gauche) - Dollar $
-    _drawBarWithSymbol(canvas, size, Offset(centerX - 45, centerY - 40), 14, 55, '\$', textPaint);
+    // === DOIGTS = BARRES AVEC SYMBOLES ===
+    _drawBarWithSymbol(canvas, size, Offset(centerX - 48, centerY - 42), 16, 58, '₣', textPaint);
+    _drawBarWithSymbol(canvas, size, Offset(centerX - 20, centerY - 54), 16, 72, '€', textPaint);
+    _drawBarWithSymbol(canvas, size, Offset(centerX + 20, centerY - 54), 16, 62, '\$', textPaint);
+    _drawBarWithSymbol(canvas, size, Offset(centerX + 48, centerY - 42), 16, 50, '£', textPaint);
     
-    // Doigt 2 (haut centre gauche) - Euro €
-    _drawBarWithSymbol(canvas, size, Offset(centerX - 18, centerY - 52), 14, 70, '€', textPaint);
-    
-    // Doigt 3 (haut centre droit) - FCFA ₣
-    _drawBarWithSymbol(canvas, size, Offset(centerX + 18, centerY - 52), 14, 60, '₣', textPaint);
-    
-    // Doigt 4 (haut droit) - Livre £
-    _drawBarWithSymbol(canvas, size, Offset(centerX + 45, centerY - 40), 14, 48, '£', textPaint);
-    
-    // === PETITS RONDS SOUS LES BARRES ===
+    // === ARTICULATIONS ===
     final smallCirclePaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
     
-    canvas.drawCircle(Offset(centerX - 45, centerY - 18), 7, smallCirclePaint);
-    canvas.drawCircle(Offset(centerX - 18, centerY - 24), 7, smallCirclePaint);
-    canvas.drawCircle(Offset(centerX + 18, centerY - 24), 7, smallCirclePaint);
-    canvas.drawCircle(Offset(centerX + 45, centerY - 18), 7, smallCirclePaint);
+    canvas.drawCircle(Offset(centerX - 48, centerY - 18), 7, smallCirclePaint);
+    canvas.drawCircle(Offset(centerX - 20, centerY - 25), 7, smallCirclePaint);
+    canvas.drawCircle(Offset(centerX + 20, centerY - 25), 7, smallCirclePaint);
+    canvas.drawCircle(Offset(centerX + 48, centerY - 18), 7, smallCirclePaint);
     
-    // === DÉTAIL : PETITE LIGNE DE CROISSANCE DANS LE COUSSINET ===
+    // === LIGNES DE CROISSANCE ===
     final linePaint = Paint()
-      ..color = Colors.white.withOpacity(0.6)
+      ..color = Colors.white.withOpacity(0.7)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
     
     canvas.drawLine(
-      Offset(centerX - 20, centerY + 5),
-      Offset(centerX + 25, centerY - 5),
+      Offset(centerX - 22, centerY + 5),
+      Offset(centerX + 28, centerY - 8),
       linePaint,
     );
     
     canvas.drawLine(
-      Offset(centerX - 15, centerY + 15),
-      Offset(centerX + 30, centerY + 5),
+      Offset(centerX - 18, centerY + 18),
+      Offset(centerX + 32, centerY + 5),
       linePaint,
     );
+    
+    // Petit point sur les lignes de croissance
+    canvas.drawCircle(Offset(centerX + 28, centerY - 8), 3, smallCirclePaint);
+    canvas.drawCircle(Offset(centerX + 32, centerY + 5), 3, smallCirclePaint);
   }
   
   void _drawBarWithSymbol(Canvas canvas, Size size, Offset position, double width, double height, String symbol, TextPainter textPainter) {
@@ -194,7 +288,7 @@ class PataLogoPainter extends CustomPainter {
       ..color = Colors.white
       ..style = PaintingStyle.fill;
     
-    // Dessiner la barre
+    // Barre arrondie
     final rect = RRect.fromRectAndRadius(
       Rect.fromCenter(
         center: position,
@@ -205,13 +299,19 @@ class PataLogoPainter extends CustomPainter {
     );
     canvas.drawRRect(rect, paint);
     
-    // Dessiner le symbole monétaire dans la barre
+    // Symbole avec ombre
     textPainter.text = TextSpan(
       text: symbol,
       style: const TextStyle(
         color: Color(0xFF008080),
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: FontWeight.bold,
+        shadows: [
+          Shadow(
+            blurRadius: 4,
+            color: Colors.white24,
+          ),
+        ],
       ),
     );
     textPainter.layout();
@@ -228,7 +328,7 @@ class PataLogoPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Ligne + flèche animée
+// Ligne + flèche avec effet premium
 class ArrowLinePainter extends CustomPainter {
   const ArrowLinePainter();
 
@@ -237,31 +337,38 @@ class ArrowLinePainter extends CustomPainter {
     final paint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 1.5;
     
-    // Ligne horizontale
-    canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(size.width - 12, size.height / 2),
-      paint,
-    );
+    // Ligne horizontale avec dégradé (via points fins)
+    for (int i = 0; i < size.width; i += 4) {
+      final opacity = 0.3 + (i / size.width) * 0.7;
+      final pointPaint = Paint()
+        ..color = Colors.white.withOpacity(opacity)
+        ..strokeWidth = 1.5;
+      
+      canvas.drawLine(
+        Offset(i.toDouble(), size.height / 2),
+        Offset((i + 2).toDouble(), size.height / 2),
+        pointPaint,
+      );
+    }
     
-    // Flèche vers le haut
+    // Flèche stylisée
     final arrowPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
     
-    const arrowSize = 8.0;
+    const arrowSize = 7.0;
     final path = Path();
-    path.moveTo(size.width - 12, size.height / 2 - arrowSize);
-    path.lineTo(size.width, size.height / 2);
-    path.lineTo(size.width - 12, size.height / 2 + arrowSize);
+    path.moveTo(size.width - 10, size.height / 2 - arrowSize);
+    path.lineTo(size.width - 2, size.height / 2);
+    path.lineTo(size.width - 10, size.height / 2 + arrowSize);
     path.close();
     
     canvas.drawPath(path, arrowPaint);
     
-    // Petit point au début de la ligne
-    canvas.drawCircle(Offset(2, size.height / 2), 3, arrowPaint);
+    // Cercle décoratif au début
+    canvas.drawCircle(Offset(3, size.height / 2), 3, arrowPaint);
   }
   
   @override
