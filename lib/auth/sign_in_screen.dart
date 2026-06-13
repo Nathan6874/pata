@@ -1,0 +1,118 @@
+import 'package:pata/auth/auth_service.dart';
+import 'package:pata/data/repository/transaction_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final authServiceProvider = Provider<AuthService>((ref) {
+  return AuthService();
+});
+
+class SignInScreen extends ConsumerWidget {
+  const SignInScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authService = ref.read(authServiceProvider);
+    final repository = ref.read(transactionRepositoryProvider);
+
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.teal.shade700, Colors.teal.shade300],
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.account_balance_wallet,
+                  size: 80,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Gestion de dépenses',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Suivez vos dépenses simplement',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 48),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    // Afficher un indicateur de chargement
+                    final scaffoldMessenger = ScaffoldMessenger.of(context);
+                    
+                    final success = await authService.signInWithGoogle();
+                    if (success) {
+                      // Charger les données depuis Firestore après connexion
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(content: Text('Connexion réussie, chargement des données...')),
+                      );
+                      await repository.loadFromFirestore();
+                      if (context.mounted) {
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(content: Text('Données synchronisées')),
+                        );
+                      }
+                    } else if (context.mounted) {
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Erreur de connexion. Veuillez réessayer.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.g_mobiledata, size: 24),
+                  label: const Text(
+                    'Se connecter avec Google',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.grey.shade800,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () async {
+                    final success = await authService.signInAnonymously();
+                    if (!success && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Erreur de connexion anonyme'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text(
+                    'Continuer sans compte (données locales uniquement)',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

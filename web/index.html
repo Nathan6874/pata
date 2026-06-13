@@ -1,0 +1,77 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <!--<base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <!--<meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="pata">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <!--<link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>pata</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion de dépenses</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <script src="flutter.js" defer></script>
+  
+  <!-- Configuration Firebase -->
+  <script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getAnalytics } from "firebase/analytics";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAecol_CrDXtZZkknmG2Jvpo28exog7nAo",
+      authDomain: "pata-noteprice.firebaseapp.com",
+      projectId: "pata-noteprice",
+      storageBucket: "pata-noteprice.firebasestorage.app",
+      messagingSenderId: "650736886798",
+      appId: "1:650736886798:web:ff1da2831eaa5ccc58885f",
+      measurementId: "G-MZBCKLGN5D"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const analytics = getAnalytics(app);
+
+    window.firebase = { app, auth, db, GoogleAuthProvider, signInWithPopup, signInAnonymously };
+  </script>
+</body>
+</html>

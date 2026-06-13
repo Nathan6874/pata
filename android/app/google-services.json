@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "650736886798",
+    "project_id": "pata-noteprice",
+    "storage_bucket": "pata-noteprice.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650736886798:android:406cb1abea05877c58885f",
+        "android_client_info": {
+          "package_name": "com.example.pata"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "650736886798-1kn5k3j4ht0ta1ae2lollnvv1f8nbhjj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.pata",
+            "certificate_hash": "715cdfe4f2bfa7a1c693f7933d0260ae8282579a"
+          }
+        },
+        {
+          "client_id": "650736886798-cf36jil7ha34rdsf6fib9f9akvl0cjv0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1R_jm8lPrkzWDE6UaBNA9mSEd4jAObto"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "650736886798-cf36jil7ha34rdsf6fib9f9akvl0cjv0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
