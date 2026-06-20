@@ -10,7 +10,7 @@ import 'package:pata/widgets/balance_card.dart';
 import 'package:pata/widgets/category_summary.dart';
 import 'package:pata/widgets/date_selector.dart';
 import 'package:pata/widgets/period_tabs.dart';
-import 'package:pata/widgets/profile_menu.dart';  // ← AJOUTER
+import 'package:pata/widgets/profile_menu.dart';
 import 'package:pata/widgets/transaction_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -227,6 +227,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  // Fonction pour le bouton "Autre" permettant de saisir un montant personnalisé
+
   Widget _buildCustomAmountButton() {
     return SizedBox(
       width: 100,
@@ -252,6 +254,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+
+  // ici la fonction pour personnaliser son montant de depense, un bouton Annuler et un bouton Ajouter
 
   void _showCustomAmountDialog() {
     final controller = TextEditingController();

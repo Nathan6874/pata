@@ -4,9 +4,10 @@ import 'package:pata/data/remote/firestore_service.dart';
 import 'package:pata/models/transaction.dart';
 import 'package:pata/models/sync_queue.dart';
 import 'package:pata/providers/providers.dart';
-import 'package:pata/utils/connectivity_checker.dart';  // ← AJOUTER CET IMPORT
+import 'package:pata/utils/connectivity_checker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:hive/hive.dart';
 
 final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
   final firestoreService = ref.read(firestoreServiceProvider);
@@ -28,6 +29,25 @@ class TransactionRepository {
   }) : _firestoreService = firestoreService,
        _connectivityChecker = connectivityChecker;
 
+  // Helper pour vérifier si Hive est prêt
+  Box<Transaction>? get _transactionsBox {
+    try {
+      return HiveService.transactionsBox;
+    } catch (e) {
+      print('⚠️ Hive transactionsBox non disponible: $e');
+      return null;
+    }
+  }
+
+  Box<SyncQueueItem>? get _syncQueueBox {
+    try {
+      return HiveService.syncQueueBox;
+    } catch (e) {
+      print('⚠️ Hive syncQueueBox non disponible: $e');
+      return null;
+    }
+  }
+
   // Charger les données depuis Firestore vers Hive
   Future<void> loadFromFirestore() async {
     if (!_connectivityChecker.isConnected) return;
@@ -35,12 +55,18 @@ class TransactionRepository {
     try {
       final transactions = await _firestoreService.fetchAllTransactions();
       
+      final box = _transactionsBox;
+      if (box == null) {
+        print('⚠️ Hive non disponible, chargement ignoré');
+        return;
+      }
+      
       // Vider Hive
-      await HiveService.transactionsBox.clear();
+      await box.clear();
       
       // Remplir avec les données Firestore
       for (final transaction in transactions) {
-        await HiveService.transactionsBox.put(transaction.id, transaction);
+        await box.put(transaction.id, transaction);
       }
       
       print('✅ ${transactions.length} transactions chargées depuis Firestore');
@@ -68,7 +94,15 @@ class TransactionRepository {
       synced: false,
     );
 
-    await HiveService.transactionsBox.put(transaction.id, transaction);
+    final box = _transactionsBox;
+    final syncBox = _syncQueueBox;
+    
+    if (box == null || syncBox == null) {
+      print('⚠️ Hive non disponible, transaction non sauvegardée');
+      return;
+    }
+
+    await box.put(transaction.id, transaction);
     
     final syncItem = SyncQueueItem(
       id: transaction.id,
@@ -76,7 +110,7 @@ class TransactionRepository {
       transaction: transaction,
       createdAt: DateTime.now(),
     );
-    await HiveService.syncQueueBox.put(transaction.id, syncItem);
+    await syncBox.put(transaction.id, syncItem);
 
     if (_connectivityChecker.isConnected) {
       await _syncNow();
@@ -84,9 +118,17 @@ class TransactionRepository {
   }
 
   Future<void> deleteTransaction(String id) async {
-    final transaction = HiveService.transactionsBox.get(id);
+    final box = _transactionsBox;
+    final syncBox = _syncQueueBox;
+    
+    if (box == null || syncBox == null) {
+      print('⚠️ Hive non disponible, suppression ignorée');
+      return;
+    }
+
+    final transaction = box.get(id);
     if (transaction != null) {
-      await HiveService.transactionsBox.delete(id);
+      await box.delete(id);
       
       final syncItem = SyncQueueItem(
         id: id,
@@ -94,7 +136,7 @@ class TransactionRepository {
         transaction: transaction,
         createdAt: DateTime.now(),
       );
-      await HiveService.syncQueueBox.put(id, syncItem);
+      await syncBox.put(id, syncItem);
       
       if (_connectivityChecker.isConnected) {
         await _syncNow();
@@ -103,8 +145,16 @@ class TransactionRepository {
   }
 
   Future<void> updateTransaction(Transaction transaction) async {
+    final box = _transactionsBox;
+    final syncBox = _syncQueueBox;
+    
+    if (box == null || syncBox == null) {
+      print('⚠️ Hive non disponible, mise à jour ignorée');
+      return;
+    }
+
     final updatedTransaction = transaction.copyWith(synced: false);
-    await HiveService.transactionsBox.put(updatedTransaction.id, updatedTransaction);
+    await box.put(updatedTransaction.id, updatedTransaction);
     
     final syncItem = SyncQueueItem(
       id: updatedTransaction.id,
@@ -112,7 +162,7 @@ class TransactionRepository {
       transaction: updatedTransaction,
       createdAt: DateTime.now(),
     );
-    await HiveService.syncQueueBox.put(updatedTransaction.id, syncItem);
+    await syncBox.put(updatedTransaction.id, syncItem);
     
     if (_connectivityChecker.isConnected) {
       await _syncNow();
@@ -120,7 +170,13 @@ class TransactionRepository {
   }
 
   Future<void> _syncNow() async {
-    final syncItems = HiveService.syncQueueBox.values.toList();
+    final syncBox = _syncQueueBox;
+    if (syncBox == null) {
+      print('⚠️ Hive syncQueue non disponible');
+      return;
+    }
+
+    final syncItems = syncBox.values.toList();
     
     for (final item in syncItems) {
       try {
@@ -136,14 +192,17 @@ class TransactionRepository {
             break;
         }
         
-        final transaction = HiveService.transactionsBox.get(item.id);
-        if (transaction != null) {
-          await HiveService.transactionsBox.put(
-            item.id,
-            transaction.copyWith(synced: true),
-          );
+        final box = _transactionsBox;
+        if (box != null) {
+          final transaction = box.get(item.id);
+          if (transaction != null) {
+            await box.put(
+              item.id,
+              transaction.copyWith(synced: true),
+            );
+          }
         }
-        await HiveService.syncQueueBox.delete(item.id);
+        await syncBox.delete(item.id);
       } catch (e) {
         print('Erreur de synchronisation: $e');
       }
@@ -161,11 +220,22 @@ class TransactionRepository {
     required DateTime endDate,
     TransactionType? type,
   }) {
-    final allTransactions = HiveService.transactionsBox.values.toList();
+    final box = _transactionsBox;
+    if (box == null) {
+      print('⚠️ Hive non disponible, liste vide');
+      return [];
+    }
+
+    final allTransactions = box.values.toList();
     
     return allTransactions.where((t) {
-      final isInPeriod = t.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
-                         t.date.isBefore(endDate.add(const Duration(days: 1)));
+      // Comparer uniquement les dates (sans l'heure)
+      final transactionDate = DateTime(t.date.year, t.date.month, t.date.day);
+      final start = DateTime(startDate.year, startDate.month, startDate.day);
+      final end = DateTime(endDate.year, endDate.month, endDate.day);
+      
+      final isInPeriod = transactionDate.isAfter(start.subtract(const Duration(days: 1))) &&
+                        transactionDate.isBefore(end.add(const Duration(days: 1)));
       final matchesType = type == null || t.type == type;
       return isInPeriod && matchesType;
     }).toList()

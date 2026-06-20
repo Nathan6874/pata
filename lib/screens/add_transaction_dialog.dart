@@ -179,11 +179,16 @@ class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
     );
   }
 
+  String _capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       
-      final motif = _motifController.text.trim();
+      final motif = _capitalizeFirstLetter(_motifController.text.trim());
       final repository = ref.read(transactionRepositoryProvider);
       
       await repository.addTransaction(

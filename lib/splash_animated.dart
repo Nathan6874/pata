@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pata/screens/home_screen.dart';
+import 'dart:math' as math;
 
 class AnimatedSplashScreen extends StatefulWidget {
   const AnimatedSplashScreen({super.key});
@@ -16,49 +17,55 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   late Animation<double> _fadeText;
   late Animation<double> _fadeTagline;
   late Animation<Offset> _slideLine;
-  late Animation<double> _pulseAnimation;
+  late Animation<double> _glowPulse;
+  late Animation<double> _waveAnimation;
 
   @override
   void initState() {
     super.initState();
     
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 3500),
       vsync: this,
     );
     
-    // Animation du logo
+    // Logo : apparition + zoom élastique
     _fadeLogo = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4, curve: Curves.easeOut)),
     );
     
-    _scaleLogo = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5, curve: Curves.elasticOut)),
+    _scaleLogo = Tween<double>(begin: 0.3, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.6, curve: Curves.elasticOut)),
     );
     
-    // Animation du texte PATA
+    // Texte PATA : apparition avec délai
     _fadeText = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.4, 0.7, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.6, curve: Curves.easeOut)),
     );
     
-    // Animation du slogan
+    // Slogan : apparition après le texte
     _fadeTagline = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 0.8, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _controller, curve: const Interval(0.5, 0.75, curve: Curves.easeOut)),
     );
     
-    // Animation de la ligne + flèche
-    _slideLine = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.7, 0.95, curve: Curves.easeOut)),
+    // Ligne + flèche : slide depuis le bas
+    _slideLine = Tween<Offset>(begin: const Offset(0, 1.5), end: Offset.zero).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.65, 0.95, curve: Curves.easeOut)),
     );
     
-    // Animation de pulsation pour les particules
-    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    // Glow pulsant autour du logo
+    _glowPulse = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5, curve: Curves.easeOut)),
+    );
+    
+    // Vague / onde pour l'effet de révélation
+    _waveAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.5, curve: Curves.easeInOut)),
     );
     
     _controller.forward();
     
-    Future.delayed(const Duration(milliseconds: 3200), () {
+    Future.delayed(const Duration(milliseconds: 3700), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -75,76 +82,99 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF008080), // Teal élégant
-            Color(0xFF00A0A0), // Teal moyen
-            Color(0xFF002626), // Teal profond
+            Color(0xFF008080),
+            Color(0xFF00A0A0),
+            Color(0xFF002626),
           ],
           stops: [0.0, 0.5, 1.0],
         ),
       ),
       child: Stack(
         children: [
-          // Particules animées en arrière-plan
-          ...List.generate(12, (index) {
-            return Positioned(
-              left: (index * 75.0) % MediaQuery.of(context).size.width,
-              top: (index * 120.0) % MediaQuery.of(context).size.height,
-              child: AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: 0.1 + (_pulseAnimation.value * 0.05),
-                    child: Container(
-                      width: 2,
-                      height: 2,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(1),
-                      ),
-                    ),
-                  );
-                },
-              ),
+          // === PARTICULES FLOTTANTES ===
+          ...List.generate(20, (index) {
+            final x = (index * 97.3) % size.width;
+            final y = (index * 143.7) % size.height;
+            final delay = index * 0.15;
+            final duration = 2.0 + (index % 3) * 1.5;
+            
+            return _FloatingParticle(
+              x: x,
+              y: y,
+              size: 2 + (index % 4),
+              delay: delay,
+              duration: duration,
+              opacity: 0.1 + (index % 5) * 0.05,
             );
           }),
+          
+          // === EFFET DE VAGUE (cercle qui s'agrandit) ===
+          Center(
+            child: AnimatedBuilder(
+              animation: _waveAnimation,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: 1.0 - _waveAnimation.value,
+                  child: Container(
+                    width: 200 + _waveAnimation.value * 400,
+                    height: 200 + _waveAnimation.value * 400,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3 * (1 - _waveAnimation.value)),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
           
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo animé
+                // === LOGO AVEC GLOW PULSANT ===
                 FadeTransition(
                   opacity: _fadeLogo,
                   child: ScaleTransition(
                     scale: _scaleLogo,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.3),
-                            blurRadius: 30,
-                            spreadRadius: 5,
+                    child: AnimatedBuilder(
+                      animation: _glowPulse,
+                      builder: (context, child) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.15 * _glowPulse.value),
+                                blurRadius: 40 + 20 * _glowPulse.value,
+                                spreadRadius: 10 * _glowPulse.value,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: const CustomPaint(
-                        size: Size(180, 180),
-                        painter: PataLogoPainter(),
-                      ),
+                          child: const CustomPaint(
+                            size: Size(180, 180),
+                            painter: PataLogoPainter(),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
                 
                 const SizedBox(height: 30),
                 
-                // Texte PATA stylisé (sans soulignement)
+                // === TEXTE PATA AVEC EFFET DE RÉVÉLATION ===
                 FadeTransition(
                   opacity: _fadeText,
                   child: ShaderMask(
@@ -172,10 +202,11 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                       ),
                     ),
                   ),
-                ),               
+                ),
+                
                 const SizedBox(height: 50),
                 
-                // Ligne + flèche animée
+                // === LIGNE + FLÈCHE ===
                 SlideTransition(
                   position: _slideLine,
                   child: const CustomPaint(
@@ -192,8 +223,84 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   }
 }
 
+// === PARTICULE FLOTTANTE ===
+class _FloatingParticle extends StatefulWidget {
+  final double x;
+  final double y;
+  final double size;
+  final double delay;
+  final double duration;
+  final double opacity;
+
+  const _FloatingParticle({
+    required this.x,
+    required this.y,
+    required this.size,
+    required this.delay,
+    required this.duration,
+    required this.opacity,
+  });
+
+  @override
+  State<_FloatingParticle> createState() => _FloatingParticleState();
+}
+
+class _FloatingParticleState extends State<_FloatingParticle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _floatAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: widget.duration.toInt()),
+      vsync: this,
+    );
+    
+    _floatAnimation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    
+    _controller.repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _floatAnimation,
+      builder: (context, child) {
+        final offsetY = math.sin(_floatAnimation.value) * 15;
+        final offsetX = math.cos(_floatAnimation.value * 0.7) * 10;
+        
+        return Positioned(
+          left: widget.x + offsetX,
+          top: widget.y + offsetY,
+          child: Opacity(
+            opacity: widget.opacity,
+            child: Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 // ============================================================
-// LOGO PATA PREMIUM : empreinte + barres + symboles monétaires
+// LOGO PATA PREMIUM
 // ============================================================
 class PataLogoPainter extends CustomPainter {
   const PataLogoPainter();
@@ -230,7 +337,7 @@ class PataLogoPainter extends CustomPainter {
       glowPaint,
     );
     
-    // === COUSSINET PRINCIPAL ===
+    // Coussinet central
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
@@ -243,13 +350,13 @@ class PataLogoPainter extends CustomPainter {
       whitePaint,
     );
     
-    // === DOIGTS = BARRES AVEC SYMBOLES ===
+    // Barres avec symboles
     _drawBarWithSymbol(canvas, size, Offset(centerX - 48, centerY - 42), 16, 58, '₣', textPaint);
     _drawBarWithSymbol(canvas, size, Offset(centerX - 20, centerY - 54), 16, 72, '€', textPaint);
     _drawBarWithSymbol(canvas, size, Offset(centerX + 20, centerY - 54), 16, 62, '\$', textPaint);
     _drawBarWithSymbol(canvas, size, Offset(centerX + 48, centerY - 42), 16, 50, '£', textPaint);
     
-    // === ARTICULATIONS ===
+    // Articulations
     final smallCirclePaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
@@ -259,7 +366,7 @@ class PataLogoPainter extends CustomPainter {
     canvas.drawCircle(Offset(centerX + 20, centerY - 25), 7, smallCirclePaint);
     canvas.drawCircle(Offset(centerX + 48, centerY - 18), 7, smallCirclePaint);
     
-    // === LIGNES DE CROISSANCE ===
+    // Lignes de croissance
     final linePaint = Paint()
       ..color = Colors.white.withOpacity(0.7)
       ..style = PaintingStyle.stroke
@@ -278,7 +385,6 @@ class PataLogoPainter extends CustomPainter {
       linePaint,
     );
     
-    // Petit point sur les lignes de croissance
     canvas.drawCircle(Offset(centerX + 28, centerY - 8), 3, smallCirclePaint);
     canvas.drawCircle(Offset(centerX + 32, centerY + 5), 3, smallCirclePaint);
   }
@@ -288,7 +394,6 @@ class PataLogoPainter extends CustomPainter {
       ..color = Colors.white
       ..style = PaintingStyle.fill;
     
-    // Barre arrondie
     final rect = RRect.fromRectAndRadius(
       Rect.fromCenter(
         center: position,
@@ -299,19 +404,12 @@ class PataLogoPainter extends CustomPainter {
     );
     canvas.drawRRect(rect, paint);
     
-    // Symbole avec ombre
     textPainter.text = TextSpan(
       text: symbol,
       style: const TextStyle(
         color: Color(0xFF008080),
         fontSize: 13,
         fontWeight: FontWeight.bold,
-        shadows: [
-          Shadow(
-            blurRadius: 4,
-            color: Colors.white24,
-          ),
-        ],
       ),
     );
     textPainter.layout();
@@ -328,7 +426,7 @@ class PataLogoPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Ligne + flèche avec effet premium
+// Ligne + flèche
 class ArrowLinePainter extends CustomPainter {
   const ArrowLinePainter();
 
@@ -339,7 +437,6 @@ class ArrowLinePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     
-    // Ligne horizontale avec dégradé (via points fins)
     for (int i = 0; i < size.width; i += 4) {
       final opacity = 0.3 + (i / size.width) * 0.7;
       final pointPaint = Paint()
@@ -353,7 +450,6 @@ class ArrowLinePainter extends CustomPainter {
       );
     }
     
-    // Flèche stylisée
     final arrowPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
@@ -366,8 +462,6 @@ class ArrowLinePainter extends CustomPainter {
     path.close();
     
     canvas.drawPath(path, arrowPaint);
-    
-    // Cercle décoratif au début
     canvas.drawCircle(Offset(3, size.height / 2), 3, arrowPaint);
   }
   
