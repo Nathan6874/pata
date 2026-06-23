@@ -2,6 +2,7 @@ import 'package:pata/data/repository/transaction_repository.dart';
 import 'package:pata/models/transaction.dart';
 import 'package:pata/screens/add_transaction_dialog.dart';
 import 'package:pata/screens/revenues_screen.dart';
+import 'package:pata/services/update_service.dart';  // ← AJOUT
 import 'package:pata/utils/constants.dart';
 import 'package:pata/utils/currency_formatter.dart';
 import 'package:pata/utils/date_formatter.dart';
@@ -26,6 +27,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Period _selectedPeriod = Period.day;
   int _selectedIndex = 0;
   DateTime _currentDate = DateTime.now();
+
+  // ============================================================
+  // AJOUT : Vérification de mise à jour au démarrage
+  // ============================================================
+  @override
+  void initState() {
+    super.initState();
+    _checkForUpdate();
+  }
+
+  Future<void> _checkForUpdate() async {
+    final isUpdateAvailable = await UpdateService.checkForUpdate();
+    if (isUpdateAvailable && mounted) {
+      _showUpdateDialog();
+    }
+  }
+
+  void _showUpdateDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('📱 Mise à jour disponible'),
+        content: const Text(
+          'Une nouvelle version de PATA est disponible.\n\n'
+          'Voulez-vous l\'installer maintenant ?\n'
+          '(Recommandé pour profiter des dernières fonctionnalités)',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await UpdateService.startUpdate();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Installer'),
+          ),
+        ],
+      ),
+    );
+  }
+  // ============================================================
+  // FIN AJOUT
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +170,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               tooltip: "Aujourd'hui",
             ),
-            // ← AJOUTER LE PROFIL
+            // Profil
             const ProfileMenu(),
           ],
         ),
@@ -228,7 +280,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // Fonction pour le bouton "Autre" permettant de saisir un montant personnalisé
-
   Widget _buildCustomAmountButton() {
     return SizedBox(
       width: 100,
@@ -255,8 +306,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ici la fonction pour personnaliser son montant de depense, un bouton Annuler et un bouton Ajouter
-
+  // Fonction pour personnaliser son montant de dépense
   void _showCustomAmountDialog() {
     final controller = TextEditingController();
     showDialog(
