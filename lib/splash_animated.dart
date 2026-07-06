@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pata/screens/home_screen.dart';
-import 'package:pata/auth/sign_in_screen.dart';  // ← IMPORTANT
+import 'package:pata/auth/sign_in_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math' as math;
 
@@ -111,7 +111,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
       ),
       child: Stack(
         children: [
-          // PARTICULES FLOTTANTES
           ...List.generate(20, (index) {
             final x = (index * 97.3) % size.width;
             final y = (index * 143.7) % size.height;
@@ -126,7 +125,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
             );
           }),
           
-          // EFFET DE VAGUE
           Center(
             child: AnimatedBuilder(
               animation: _waveAnimation,
@@ -153,7 +151,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // LOGO AVEC GLOW PULSANT
                 FadeTransition(
                   opacity: _fadeLogo,
                   child: ScaleTransition(
@@ -184,7 +181,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                 
                 const SizedBox(height: 30),
                 
-                // TEXTE PATA
                 FadeTransition(
                   opacity: _fadeText,
                   child: ShaderMask(
@@ -216,7 +212,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                 
                 const SizedBox(height: 50),
                 
-                // LIGNE + FLÈCHE
                 SlideTransition(
                   position: _slideLine,
                   child: const CustomPaint(
@@ -334,7 +329,6 @@ class PataLogoPainter extends CustomPainter {
     final centerX = size.width / 2;
     final centerY = size.height / 2;
     
-    // Glow derrière le coussinet
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
@@ -347,7 +341,6 @@ class PataLogoPainter extends CustomPainter {
       glowPaint,
     );
     
-    // Coussinet central
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
@@ -360,13 +353,11 @@ class PataLogoPainter extends CustomPainter {
       whitePaint,
     );
     
-    // Barres avec symboles
     _drawBarWithSymbol(canvas, size, Offset(centerX - 48, centerY - 42), 16, 58, '₣', textPaint);
     _drawBarWithSymbol(canvas, size, Offset(centerX - 20, centerY - 54), 16, 72, '€', textPaint);
     _drawBarWithSymbol(canvas, size, Offset(centerX + 20, centerY - 54), 16, 62, '\$', textPaint);
     _drawBarWithSymbol(canvas, size, Offset(centerX + 48, centerY - 42), 16, 50, '£', textPaint);
     
-    // Articulations
     final smallCirclePaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
@@ -376,7 +367,6 @@ class PataLogoPainter extends CustomPainter {
     canvas.drawCircle(Offset(centerX + 20, centerY - 25), 7, smallCirclePaint);
     canvas.drawCircle(Offset(centerX + 48, centerY - 18), 7, smallCirclePaint);
     
-    // Lignes de croissance
     final linePaint = Paint()
       ..color = Colors.white.withOpacity(0.7)
       ..style = PaintingStyle.stroke

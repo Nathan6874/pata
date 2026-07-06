@@ -1,6 +1,6 @@
 import 'package:pata/app/app.dart';
 import 'package:pata/data/local/hive_service.dart';
-import 'package:pata/splash_animated.dart';  // ← CHANGER splash_screen → splash_animated
+import 'package:pata/splash_animated.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
