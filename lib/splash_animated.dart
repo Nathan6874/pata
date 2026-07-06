@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pata/screens/home_screen.dart';
+import 'package:pata/auth/sign_in_screen.dart';  // ← IMPORTANT
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math' as math;
 
 class AnimatedSplashScreen extends StatefulWidget {
@@ -29,7 +31,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
       vsync: this,
     );
     
-    // Logo : apparition + zoom élastique
     _fadeLogo = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4, curve: Curves.easeOut)),
     );
@@ -38,38 +39,32 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
       CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.6, curve: Curves.elasticOut)),
     );
     
-    // Texte PATA : apparition avec délai
     _fadeText = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.6, curve: Curves.easeOut)),
     );
     
-    // Slogan : apparition après le texte
     _fadeTagline = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.5, 0.75, curve: Curves.easeOut)),
     );
     
-    // Ligne + flèche : slide depuis le bas
     _slideLine = Tween<Offset>(begin: const Offset(0, 1.5), end: Offset.zero).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.65, 0.95, curve: Curves.easeOut)),
     );
     
-    // Glow pulsant autour du logo
     _glowPulse = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5, curve: Curves.easeOut)),
     );
     
-    // Vague / onde pour l'effet de révélation
     _waveAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.5, curve: Curves.easeInOut)),
     );
     
     _controller.forward();
     
+    // ✅ Après l'animation, vérifier l'état de connexion
     Future.delayed(const Duration(milliseconds: 3700), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        _navigateToNextScreen();
       }
     });
   }
@@ -78,6 +73,23 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  // ✅ Méthode pour naviguer vers la bonne page après le splash
+  void _navigateToNextScreen() {
+    final user = FirebaseAuth.instance.currentUser;
+    
+    if (user != null) {
+      // ✅ Si connecté → HomeScreen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } else {
+      // ✅ Si non connecté → SignInScreen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SignInScreen()),
+      );
+    }
   }
 
   @override
@@ -99,24 +111,22 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
       ),
       child: Stack(
         children: [
-          // === PARTICULES FLOTTANTES ===
+          // PARTICULES FLOTTANTES
           ...List.generate(20, (index) {
             final x = (index * 97.3) % size.width;
             final y = (index * 143.7) % size.height;
-            final delay = index * 0.15;
             final duration = 2.0 + (index % 3) * 1.5;
             
             return _FloatingParticle(
               x: x,
               y: y,
               size: 2 + (index % 4),
-              delay: delay,
               duration: duration,
               opacity: 0.1 + (index % 5) * 0.05,
             );
           }),
           
-          // === EFFET DE VAGUE (cercle qui s'agrandit) ===
+          // EFFET DE VAGUE
           Center(
             child: AnimatedBuilder(
               animation: _waveAnimation,
@@ -143,7 +153,7 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // === LOGO AVEC GLOW PULSANT ===
+                // LOGO AVEC GLOW PULSANT
                 FadeTransition(
                   opacity: _fadeLogo,
                   child: ScaleTransition(
@@ -174,7 +184,7 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                 
                 const SizedBox(height: 30),
                 
-                // === TEXTE PATA AVEC EFFET DE RÉVÉLATION ===
+                // TEXTE PATA
                 FadeTransition(
                   opacity: _fadeText,
                   child: ShaderMask(
@@ -206,7 +216,7 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                 
                 const SizedBox(height: 50),
                 
-                // === LIGNE + FLÈCHE ===
+                // LIGNE + FLÈCHE
                 SlideTransition(
                   position: _slideLine,
                   child: const CustomPaint(
@@ -223,12 +233,13 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   }
 }
 
-// === PARTICULE FLOTTANTE ===
+// ============================================================
+// PARTICULE FLOTTANTE
+// ============================================================
 class _FloatingParticle extends StatefulWidget {
   final double x;
   final double y;
   final double size;
-  final double delay;
   final double duration;
   final double opacity;
 
@@ -236,7 +247,6 @@ class _FloatingParticle extends StatefulWidget {
     required this.x,
     required this.y,
     required this.size,
-    required this.delay,
     required this.duration,
     required this.opacity,
   });

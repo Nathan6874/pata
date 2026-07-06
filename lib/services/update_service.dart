@@ -1,5 +1,6 @@
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UpdateService {
   static bool _isChecking = false;
@@ -7,21 +8,19 @@ class UpdateService {
   static String? _updateMessage;
   static bool _forceUpdate = false;
 
-  // URL par défaut (GitHub Release)
-  static const String defaultApkUrl = "https://github.com/Nathan6874/pata/releases/download/v1.0.1/pata-1.0.1.apk";
+  static const String defaultApkUrl = 
+      "https://github.com/Nathan6874/pata/releases/latest/download/pata.apk";
 
   static Future<bool> checkForUpdate() async {
     if (_isChecking) return false;
     _isChecking = true;
 
     try {
-      // 1. Récupérer la version actuelle
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
 
       print('📱 Version actuelle: $currentVersion');
 
-      // 2. Récupérer la version distante depuis Firebase Remote Config
       final remoteConfig = FirebaseRemoteConfig.instance;
 
       await remoteConfig.setConfigSettings(
@@ -31,9 +30,8 @@ class UpdateService {
         ),
       );
 
-      // Valeurs par défaut (utiliser GitHub Releases)
       await remoteConfig.setDefaults({
-        'app_version': '1.0.1',  // ← Mettre la dernière version
+        'app_version': '1.0.1',
         'apk_url': defaultApkUrl,
         'update_message': 'Nouvelle version disponible sur GitHub',
         'force_update': false,
@@ -60,7 +58,6 @@ class UpdateService {
     }
   }
 
-  // Comparer les versions
   static bool _compareVersions(String current, String remote) {
     if (current == remote) return false;
     if (remote.isEmpty) return false;
@@ -86,12 +83,13 @@ class UpdateService {
     final url = _apkUrl ?? defaultApkUrl;
     print('📥 Téléchargement APK depuis: $url');
     
-    // Ouvre le navigateur avec le lien de téléchargement
-    // L'utilisateur pourra télécharger et installer l'APK
     try {
-      // Utiliser le package url_launcher pour ouvrir le lien
-      // await launchUrl(Uri.parse(url));
-      print('🔗 Ouvrir: $url');
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        print('❌ Impossible d\'ouvrir le lien');
+      }
     } catch (e) {
       print('❌ Erreur: $e');
     }

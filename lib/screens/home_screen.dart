@@ -2,7 +2,7 @@ import 'package:pata/data/repository/transaction_repository.dart';
 import 'package:pata/models/transaction.dart';
 import 'package:pata/screens/add_transaction_dialog.dart';
 import 'package:pata/screens/revenues_screen.dart';
-import 'package:pata/services/update_service.dart';  // ← AJOUT
+import 'package:pata/services/update_service.dart';  
 import 'package:pata/utils/constants.dart';
 import 'package:pata/utils/currency_formatter.dart';
 import 'package:pata/utils/date_formatter.dart';

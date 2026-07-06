@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pata/auth/auth_service.dart';
+import 'package:pata/auth/sign_in_screen.dart' as auth_screen;
 
 class ProfileMenu extends ConsumerStatefulWidget {
   const ProfileMenu({super.key});
@@ -67,6 +68,11 @@ class _ProfileMenuState extends ConsumerState<ProfileMenu> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Déconnecté avec succès')),
               );
+              // ✅ REDIRECTION VERS LA PAGE DE CONNEXION (avec alias)
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const auth_screen.SignInScreen()),
+                (route) => false,
+              );
             }
           }
         }
@@ -83,10 +89,11 @@ class _ProfileMenuState extends ConsumerState<ProfileMenu> {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
-              Text(
-                _user?.email ?? 'email@exemple.com',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              if (_user?.email != null && _user!.email!.isNotEmpty)
+                Text(
+                  _user!.email!,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
             ],
           ),
         ),

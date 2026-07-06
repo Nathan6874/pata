@@ -1,6 +1,6 @@
 import 'package:pata/app/app.dart';
 import 'package:pata/data/local/hive_service.dart';
-import 'package:pata/splash_animated.dart';  // ← Nouvelle import
+import 'package:pata/splash_animated.dart';  // ← CHANGER splash_screen → splash_animated
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +21,7 @@ void main() async {
   
   runApp(
     const ProviderScope(
-      child: MyApp(),  // ← Changement ici
+      child: MyApp(),
     ),
   );
 }
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const AnimatedSplashScreen(),  // ← Écran animé au démarrage
+      home: const AnimatedSplashScreen(),
     );
   }
 }
