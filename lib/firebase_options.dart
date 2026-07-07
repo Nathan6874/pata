@@ -39,9 +39,9 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: "AIzaSyAeocL_CxDxTZkkmG2Jvpo28exog7nA0",
-    appId: "1:6507368867:web:ff1da2831eaa5ccc58885f",
-    messagingSenderId: "6507368867",
+    apiKey: "AIzaSyAecol_CrDXtZZkknmG2Jvpo28exog7nAo",
+    appId: "1:650736886798:web:ff1da2831eaa5ccc58885f",
+    messagingSenderId: "650736886798",
     projectId: "pata-noteprice",
     authDomain: "pata-noteprice.firebaseapp.com",
     storageBucket: "pata-noteprice.firebasestorage.app",

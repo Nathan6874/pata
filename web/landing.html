@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PATA - Gérez vos dépenses simplement</title>
+  
+  <meta name="description" content="PATA est une application de gestion de dépenses personnelles. Téléchargez l'APK ou utilisez la version web.">
+  <meta name="theme-color" content="#008080">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #008080 0%, #004040 50%, #002626 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #fff;
+    }
+    
+    .container {
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      padding: 40px 30px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+    }
+    
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+    }
+    
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 60%, rgba(255,255,255,0.6));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .tagline {
+      font-size: 16px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 32px;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    
+    .feature {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .divider {
+      width: 60px;
+      height: 2px;
+      background: rgba(255,255,255,0.2);
+      margin: 8px auto 32px;
+    }
+    
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 24px;
+      border-radius: 16px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .btn-android {
+      background: #3DDC84;
+      color: #000;
+    }
+    
+    .btn-android:hover {
+      background: #4BE89A;
+      transform: translateY(-2px);
+    }
+    
+    .btn-web {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+    
+    .btn-web:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateY(-2px);
+    }
+    
+    .btn-icon {
+      font-size: 24px;
+    }
+    
+    .footer {
+      margin-top: 32px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .footer a {
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .version {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.25);
+      margin-top: 8px;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 20px;
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+      }
+      h1 {
+        font-size: 36px;
+      }
+      .features {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    
+    <div class="logo">🐾</div>
+    
+    <h1>PATA</h1>
+    <p class="tagline">Gérez vos dépenses, simplement</p>
+    
+    <div class="badge">📱 Version 1.0.1</div>
+    
+    <div class="features">
+      <div class="feature">⚡ Ajout rapide</div>
+      <div class="feature">🏷️ Catégorisation auto</div>
+      <div class="feature">📊 Statistiques</div>
+      <div class="feature">☁️ Synchronisation</div>
+      <div class="feature">📱 Mobile / Web</div>
+      <div class="feature">🔒 Hors ligne</div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="buttons">
+      
+      <a href="https://github.com/Nathan6874/pata/releases/latest/download/pata.apk" 
+         class="btn btn-android" target="_blank">
+        <span class="btn-icon">📱</span>
+        Télécharger l'APK Android
+      </a>
+      
+      <a href="/app/" class="btn btn-web">
+        <span class="btn-icon">🌐</span>
+        Ouvrir la version Web
+      </a>
+      
+      <a href="https://github.com/Nathan6874/pata" 
+         class="btn btn-web" 
+         target="_blank" 
+         style="font-size:13px;padding:12px 20px;background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);">
+        📦 Voir le code source
+      </a>
+      
+    </div>
+    
+    <div class="footer">
+      <p>© 2026 PATA</p>
+      <p style="margin-top:4px;">
+        <a href="https://github.com/Nathan6874/pata" target="_blank">GitHub</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:contact@pata.com">Contact</a>
+      </p>
+    </div>
+    
+    <div class="version">v1.0.1</div>
+  </div>
+  
+</body>
+</html>

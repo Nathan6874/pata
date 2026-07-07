@@ -20,5 +20,50 @@
 </head>
 <body>
   <div id="flutter-app"></div>
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- FIREBASE - Version la plus simple possible            -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+
+      apiKey: "AIzaSyAecol_CrDXtZZkknmG2Jvpo28exog7nAo",
+      authDomain: "pata-noteprice.firebaseapp.com",
+      projectId: "pata-noteprice",
+      storageBucket: "pata-noteprice.firebasestorage.app",
+      messagingSenderId: "650736886798",
+      appId: "1:650736886798:web:ff1da2831eaa5ccc58885f",
+      measurementId: "G-MZBCKLGN5D"
+
+    };
+
+    
+    // Forcer le service worker à se mettre à jour
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          registration.update();
+        }
+      });
+    }
+
+
+    // Initialiser Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // ✅ Exposer pour Flutter
+    window.firebase = firebase;
+
+    // ✅ Exposer aussi les services directement
+    window.firebaseApp = firebase.app();
+    window.firebaseAuth = firebase.auth();
+    window.firebaseFirestore = firebase.firestore();
+
+    console.log('✅ Firebase initialisé (compat)');
+  </script>
 </body>
 </html>

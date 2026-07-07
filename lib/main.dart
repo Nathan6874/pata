@@ -17,6 +17,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
+  // ✅ Hive s'adapte au Web
   await HiveService.init();
   
   runApp(

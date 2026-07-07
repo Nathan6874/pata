@@ -4,6 +4,7 @@ import 'package:pata/adapters/sync_queue_adapter.dart';
 import 'package:pata/models/transaction.dart';
 import 'package:pata/models/sync_queue.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class HiveService {
   static const String transactionsBoxName = 'transactions';
@@ -13,10 +14,15 @@ class HiveService {
   static late Box<SyncQueueItem> _syncQueueBox;
 
   static Future<void> init() async {
-    final appDocumentDir = await getApplicationDocumentsDirectory();
-    Hive.init(appDocumentDir.path);
+    // ✅ Sur le Web, on n'utilise pas path_provider
+    if (kIsWeb) {
+      Hive.init('hive_db');
+    } else {
+      final appDocumentDir = await getApplicationDocumentsDirectory();
+      Hive.init(appDocumentDir.path);
+    }
     
-    // Enregistrer les adapters manuels
+    // Enregistrer les adapters
     Hive.registerAdapter(TransactionAdapter());
     Hive.registerAdapter(SyncQueueItemAdapter());
     Hive.registerAdapter(SyncActionAdapter());
