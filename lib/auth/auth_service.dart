@@ -2,7 +2,7 @@ import 'package:pata/data/local/hive_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;  // ← AJOUTER CET IMPORT
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
@@ -15,11 +15,10 @@ class AuthService {
   Future<bool> signInWithGoogle() async {
     try {
       if (kIsWeb) {
-        // ✅ Pour le Web : utiliser la redirection
-        await _auth.signInWithPopup(GoogleAuthProvider());
+        final provider = GoogleAuthProvider();
+        await _auth.signInWithPopup(provider);
         return true;
       } else {
-        // ✅ Pour Android/iOS : utiliser GoogleSignIn
         final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
         if (googleUser == null) return false;
         
@@ -50,7 +49,14 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
-    await _auth.signOut();
+    try {
+      await _auth.signOut();
+      if (!kIsWeb) {
+        await _googleSignIn.signOut();
+      }
+      print('✅ Déconnecté avec succès');
+    } catch (e) {
+      print('❌ Erreur déconnexion: $e');
+    }
   }
 }

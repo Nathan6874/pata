@@ -31,6 +31,7 @@ class FirestoreService {
     await _transactionsCollection.doc(id).delete();
   }
 
+  // ✅ ÉCOUTE EN TEMPS RÉEL
   Stream<List<model.Transaction>> watchTransactions() {
     return _transactionsCollection
         .orderBy('date', descending: true)
@@ -42,7 +43,6 @@ class FirestoreService {
         });
   }
 
-  // ← NOUVELLE MÉTHODE : Récupérer toutes les transactions une fois
   Future<List<model.Transaction>> fetchAllTransactions() async {
     final snapshot = await _transactionsCollection
         .orderBy('date', descending: true)

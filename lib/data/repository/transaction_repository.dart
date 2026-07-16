@@ -29,6 +29,14 @@ class TransactionRepository {
   }) : _firestoreService = firestoreService,
        _connectivityChecker = connectivityChecker;
 
+  // ✅ Méthode syncData à l'intérieur de la classe
+  Future<void> syncData() async {
+    if (_connectivityChecker.isConnected) {
+      await loadFromFirestore();
+      await _syncNow();
+    }
+  }
+
   // Helper pour vérifier si Hive est prêt
   Box<Transaction>? get _transactionsBox {
     try {
