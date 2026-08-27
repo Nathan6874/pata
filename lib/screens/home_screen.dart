@@ -15,8 +15,9 @@ import 'package:pata/widgets/profile_menu.dart';
 import 'package:pata/widgets/transaction_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' as firestore;  // ← ALIAS
-import 'package:firebase_auth/firebase_auth.dart';  // ← AJOUTER CET IMPORT
+import 'package:cloud_firestore/cloud_firestore.dart' as firestore;   
+import 'package:firebase_auth/firebase_auth.dart';  
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -30,15 +31,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
   DateTime _currentDate = DateTime.now();
   
-  // ✅ Stream de transactions en temps réel
   late Stream<List<Transaction>> _transactionsStream;
 
   @override
   void initState() {
     super.initState();
-    _checkForUpdate();
+    
+    // ✅ Ne vérifier les mises à jour que sur Android (pas sur Web)
+    if (!kIsWeb) {
+      _checkForUpdate();
+    }
     
     // ✅ Initialiser le stream Firestore
+    _initFirestoreStream();
+  }
+
+  // ✅ Méthode pour initialiser le stream Firestore
+  void _initFirestoreStream() {
     final firestoreInstance = firestore.FirebaseFirestore.instance;
     final userId = FirebaseAuth.instance.currentUser?.uid;
     
@@ -166,7 +175,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         break;
     }
 
-    // ✅ Utiliser le stream pour les dépenses
     return StreamBuilder<List<Transaction>>(
       stream: _transactionsStream,
       builder: (context, snapshot) {
@@ -180,7 +188,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         
         final allTransactions = snapshot.data!;
         
-        // Filtrer par période
         final depenses = allTransactions.where((t) {
           final transactionDate = DateTime(t.date.year, t.date.month, t.date.day);
           final start = DateTime(startDate.year, startDate.month, startDate.day);
@@ -193,7 +200,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         
         final totalDepenses = depenses.fold(0, (sum, t) => sum + t.montant);
         
-        // Calculer les revenus pour la période
         final revenus = allTransactions.where((t) {
           final transactionDate = DateTime(t.date.year, t.date.month, t.date.day);
           final start = DateTime(startDate.year, startDate.month, startDate.day);
