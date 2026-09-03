@@ -1,7 +1,7 @@
 import 'package:pata/auth/auth_service.dart';
 import 'package:pata/data/repository/transaction_repository.dart';
 import 'package:pata/screens/home_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';  // ← AJOUTER CET IMPORT
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,11 +19,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Widget build(BuildContext context) {
     final authService = ref.read(authServiceProvider);
     final repository = ref.read(transactionRepositoryProvider);
-
-    // ✅ Écouter les changements d'authentification
-    ref.listen<User?>(authServiceProvider.select((p) => null), (previous, next) {
-      // Cette méthode sera appelée quand l'état d'auth change
-    });
 
     return Scaffold(
       body: Container(
@@ -74,15 +69,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                               final success = await authService.signInWithGoogle();
                               if (success) {
                                 scaffoldMessenger.showSnackBar(
-                                  const SnackBar(content: Text('Connexion réussie, chargement des données...')),
+                                  const SnackBar(content: Text('Connexion réussie')),
                                 );
-                                await repository.loadFromFirestore();
                                 
                                 if (context.mounted) {
-                                  scaffoldMessenger.showSnackBar(
-                                    const SnackBar(content: Text('Données synchronisées')),
-                                  );
-                                  // ✅ FORCER LA REDIRECTION VERS HOME
                                   Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(builder: (_) => const HomeScreen()),
                                   );

@@ -9,9 +9,9 @@ final firestoreServiceProvider = Provider<FirestoreService>((ref) {
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
-  
+
   CollectionReference get _transactionsCollection {
     if (_userId == null) {
       throw Exception('Utilisateur non connecté');
@@ -31,7 +31,7 @@ class FirestoreService {
     await _transactionsCollection.doc(id).delete();
   }
 
-  // ✅ ÉCOUTE EN TEMPS RÉEL
+  // ✅ STREAM EN TEMPS RÉEL (source unique)
   Stream<List<model.Transaction>> watchTransactions() {
     return _transactionsCollection
         .orderBy('date', descending: true)
@@ -43,11 +43,12 @@ class FirestoreService {
         });
   }
 
+  // ✅ Récupérer toutes les transactions une fois (pour les calculs)
   Future<List<model.Transaction>> fetchAllTransactions() async {
     final snapshot = await _transactionsCollection
         .orderBy('date', descending: true)
         .get();
-    
+
     return snapshot.docs.map((doc) {
       return model.Transaction.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();

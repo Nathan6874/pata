@@ -38,7 +38,6 @@ class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
   @override
   void initState() {
     super.initState();
-    // Auto-focus sur le champ motif
     Future.delayed(const Duration(milliseconds: 100), () {
       FocusScope.of(context).requestFocus(_motifControllerFocusNode);
     });

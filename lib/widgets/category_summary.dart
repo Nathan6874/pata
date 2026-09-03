@@ -4,7 +4,7 @@ import 'package:pata/utils/currency_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CategorySummary extends ConsumerWidget {
+class CategorySummary extends ConsumerStatefulWidget {
   final DateTime startDate;
   final DateTime endDate;
 
@@ -15,16 +15,58 @@ class CategorySummary extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CategorySummary> createState() => _CategorySummaryState();
+}
+
+class _CategorySummaryState extends ConsumerState<CategorySummary> {
+  // ✅ Mémoriser les données pour éviter de recalculer à chaque rebuild
+  Map<String, int>? _cachedData;
+
+  @override
+  Widget build(BuildContext context) {
     final repository = ref.read(transactionRepositoryProvider);
-    final categoryTotals = repository.getCategoryTotals(
-      startDate: startDate,
-      endDate: endDate,
+    
+    // Si on a déjà des données en cache, les afficher immédiatement
+    if (_cachedData != null && _cachedData!.isNotEmpty) {
+      return _buildSummary(_cachedData!);
+    }
+
+    return FutureBuilder<Map<String, int>>(
+      future: repository.getCategoryTotals(
+        startDate: widget.startDate,
+        endDate: widget.endDate,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // ✅ Affichage minimal pendant le chargement
+          return const SizedBox(
+            height: 30,
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Mettre en cache
+        _cachedData = snapshot.data!;
+        return _buildSummary(snapshot.data!);
+      },
     );
-    
+  }
+
+  Widget _buildSummary(Map<String, int> categoryTotals) {
     final categories = CategoryService().rules.map((r) => r.name).toList();
-    
-    if (categoryTotals.isEmpty) {
+    final visibleCategories = categories.where((cat) => categoryTotals.containsKey(cat)).toList();
+
+    if (visibleCategories.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -43,30 +85,30 @@ class CategorySummary extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
-              children: categories.where((cat) => categoryTotals.containsKey(cat)).map((category) {
+              children: visibleCategories.map((category) {
                 final amount = categoryTotals[category] ?? 0;
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
                       Container(
-                        width: 12,
-                        height: 12,
+                        width: 10,
+                        height: 10,
                         decoration: BoxDecoration(
                           color: _getCategoryColor(category),
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           category,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                         ),
                       ),
                       Text(
                         formatCurrencyWithSymbol(amount),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
